@@ -54,3 +54,7 @@ KiraAI 插件：轮询 [tibo.cc](https://tibo.cc) 的 Codex 重置公告，有�
 ## License
 
 MIT
+
+## Changelog
+
+- 1.2.0: 去掉写死的默认推送目标；废弃 `llm_auto` 模式，只保留 direct / notice
