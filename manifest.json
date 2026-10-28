@@ -1,0 +1,20 @@
+{
+  "plugin_id": "tibo_push",
+  "display_name": "Tibo Push",
+  "version": "1.2.0",
+  "core_version": ">=3.0.0",
+  "author": "kinoko-xgya",
+  "description": "Watch tibo.cc for Codex reset announcements and push on change. Two delivery modes: machine notice or hand off to the agent.",
+  "tags": [
+    "monitor",
+    "push",
+    "codex"
+  ],
+  "locales": {
+    "zh": {
+      "display_name": "Tibo 变化推送",
+      "description": "轮询 tibo.cc 的 Codex 重置动态，有变化时推送。两种模式：机器原样播报，或交给会话里的 agent 处理。"
+    }
+  },
+  "repo": "https://github.com/kinoko-xgya/kira-tibo-push"
+}
