@@ -1,0 +1,61 @@
+{
+  "target_session": {
+    "type": "session_select",
+    "name": "Target session",
+    "default": "",
+    "hint": "Where change notifications go. Leave empty to use the host's admin DM; if that is unknown the plugin only logs.",
+    "locales": {
+      "zh": {
+        "name": "目标会话",
+        "hint": "变化推送到哪个会话；留空则用宿主的管理员私聊，再取不到就只写日志不推送"
+      }
+    }
+  },
+  "mode": {
+    "type": "string",
+    "name": "Push mode",
+    "default": "direct",
+    "options": [
+      "direct",
+      "notice"
+    ],
+    "hint": "direct = machine-formatted notice sent straight to the target; notice = wake the agent in the target session so it can respond.",
+    "locales": {
+      "zh": {
+        "name": "推送方式",
+        "hint": "direct=机器原样播报；notice=叫醒目标会话里的我，由我处理"
+      }
+    }
+  },
+  "section_advanced": {
+    "type": "section",
+    "name": "Advanced",
+    "collapsed": true,
+    "fields": {
+      "poll_seconds": {
+        "type": "integer",
+        "name": "Poll interval (seconds)",
+        "default": 300,
+        "hint": "How often tibo.cc is fetched. Minimum 60.",
+        "locales": {
+          "zh": {
+            "name": "轮询间隔（秒）",
+            "hint": "多久拉一次 tibo.cc，最小 60"
+          }
+        }
+      },
+      "fail_alert_seconds": {
+        "type": "integer",
+        "name": "API failure alert after (seconds)",
+        "default": 600,
+        "hint": "Only warn once the API stays unreachable this long.",
+        "locales": {
+          "zh": {
+            "name": "接口失败提醒阈值（秒）",
+            "hint": "连续拉不到数据多久才提醒一次"
+          }
+        }
+      }
+    }
+  }
+}
