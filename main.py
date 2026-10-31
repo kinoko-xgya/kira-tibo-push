@@ -78,6 +78,51 @@ def _pick(value, allowed, default):
 
 
 
+def _adapters(ctx=None) -> list:
+    """Adapter instance names the host knows about, best effort.
+
+    KiraAI exposes them through ctx.adapter_mgr.get_adapters() (dict) or
+    get_adapters_info() (list of AdapterInfo). Both are tried; a wrong guess
+    must never raise, because this runs on the config path.
+    """
+    try:
+        mgr = getattr(ctx, "adapter_mgr", None) if ctx is not None else None
+        if mgr is None:
+            return []
+        names = []
+        info_list = mgr.get_adapters_info() or []
+        for info in info_list:
+            name = getattr(info, "name", None) or getattr(info, "adapter_name", None)
+            if name:
+                names.append(str(name))
+        if not names:
+            names = [str(k) for k in (mgr.get_adapters() or {}).keys()]
+        return names
+    except Exception:
+        return []
+
+
+def _qualify(raw: str, ctx=None, kind: str = "dm") -> str:
+    """Return a fully-qualified sid, or "" if it cannot be inferred safely.
+
+    A bare id is completed with the host's adapter name instead of a hardcoded
+    "QQ", so the same build works on any platform. If the host reports zero or
+    several adapter names we return "" rather than guess -- pushing a stranger's
+    DM is worse than not pushing at all.
+    """
+    target = (raw or "").strip()
+    if not target:
+        return ""
+    if target.count(":") == 2:
+        return target
+    if ":" in target:          # e.g. "qq:dm:123" already has the adapter
+        return target
+    names = _adapters(ctx)
+    if len(names) == 1:
+        return f"{names[0]}:{kind}:{target}"
+    return ""
+
+
 def _fallback_target(ctx) -> str:
     """Best-effort default target: the owner/admin DM declared by the host.
 
@@ -89,9 +134,9 @@ def _fallback_target(ctx) -> str:
         for key in ("admin_users", "admins", "owner"):
             v = cfg.get(key) if isinstance(cfg, dict) else None
             if isinstance(v, (list, tuple)) and v:
-                return f"QQ:dm:{v[0]}"
+                return _qualify(str(v[0]), ctx, "dm")
             if isinstance(v, (str, int)) and v:
-                return f"QQ:dm:{v}"
+                return _qualify(str(v), ctx, "dm")
     except Exception:
         pass
     return ""
@@ -123,7 +168,7 @@ class TiboPushPlugin(BasePlugin):
         self.target = str(target).strip() if target else DEFAULT_TARGET
         # target_session may be a bare id when the schema selector strips the prefix
         if self.target and self.target.count(":") != 2:
-            self.target = f"QQ:dm:{self.target}"
+            self.target = _qualify(self.target, getattr(self, "ctx", None), "gm")
         if not self.target:
             self.target = _fallback_target(ctx)
         self.mode = _pick(cfg.get("mode"), ("direct", "notice"), "direct")
@@ -188,9 +233,7 @@ class TiboPushPlugin(BasePlugin):
         target = (self.target or "").strip()
         if target.count(":") == 2:
             return target
-        if target:
-            return f"QQ:dm:{target}"
-        return ""
+        return _qualify(target, getattr(self, "ctx", None))
 
     async def _push(self, raw_text: str):
         """direct: plain machine notice. notice: hand the facts to the agent.
